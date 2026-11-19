@@ -33,7 +33,7 @@
   - Staff can search using the patient's unique ID number or registered phone number in the central database.
   - Staff views are generally read-only.
   - Ward doctors can update and add prescriptions.
-  - Assistants can update appointment scheduling details(can cancel or make appointments.
+  - Assistants can update appointment scheduling details can cancel or make appointments.
 
 ### User Story 2: Verifying Bill Receipts
 
