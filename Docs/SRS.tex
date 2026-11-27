@@ -1,0 +1,580 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage{xcolor}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!60!black,
+    urlcolor=blue!60!black,
+    pdftitle={Software Requirements Specification - Centralized Hospital Management System}
+}
+
+\title{\textbf{Software Requirements Specification}\\ \large for \\ \textbf{Centralized Hospital Management System}}
+% \author{
+%   First Author \\ Institution Name \\ \texttt{email1@example.com}
+%   \and
+%   Second Author \\ Institution Name \\ \texttt{email2@example.com}
+% }
+\author{
+    Yeahia Ibne Rafiq \\ 
+    \textit{Independent University, Bangladesh}  \\
+    \texttt{2431059@iub.edu.bd}
+    \and 
+    Boktier Ahmed Shojib \\ 
+    \textit{Independent University, Bangladesh}  \\
+    \texttt{2431059@iub.edu.bd}
+    \and 
+    Yeahia Ibne Rafiq \\ 
+    \textit{Independent University, Bangladesh}  \\
+    \texttt{2431059@iub.edu.bd}
+    }
+
+\date{November 2026}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+\newpage
+
+\tableofcontents
+\newpage
+
+\section{Introduction}
+
+\subsection{Purpose}
+The purpose of the Centralized Hospital Management System (CHMS) is to streamline core hospital workflows, specifically doctor appointment scheduling, medical and diagnostic record keeping, laboratory test tracking, and patient billing—through a single, accessible web-based platform. Built to address the inefficiencies and delays of the manual system currently being used in some public hospitals, the system eliminates the need for patients to make phone calls days in advance to book appointments, carry physical report binders around everywhere, or stand in queues to settle bills. At the same time, it equips doctors, pathologists, accountants, and support staff with real-time, role-restricted access to verified patient histories, test status, and payment receipts. But it should be made abundantly clear that this system should run alongside the existing manual hospital process rather than replace it, CHMS enhances convenience, transparency, and operational efficiency but users shouldn't get overly reliant on system.
+
+\subsection{Intended Audience and Intended Use}
+\begin{itemize}
+
+    \item \textbf{IT Management and System Administrators:} Use administrative tools to create staff accounts, assign and manage role-based access permissions, oversee cloud database hosting, and perform late-night system maintenance and updates.
+    
+     \item \textbf{Support Staff (Assistants, Ward Nurses, Pharmacy Staff):} Use role-restricted read/operational views to assist daily hospital tasks—assistants manage doctor schedules, block unavailable dates/slots, cancel appointments, and verify bill receipts; ward nurses view prescriptions and reports for patients in their assigned ward; and pharmacy staff view patient prescriptions to dispense medications.   
+     
+    \item \textbf{Patients:} Use the web portal to register/log in, view doctor availability, book confirmed appointment slots, view and download their own prescriptions, track bills, pay fees online via a simulated payment gateway, download digital payment receipts, and upload external test reports.
+
+    \item \textbf{Accountants:} Use the billing module to look up patient service records, generate itemized hospital bills, monitor unpaid and partially paid balances, track payment histories, and oversee online and manual counter transactions.
+    
+    \item \textbf{Doctors (including Ward Doctors):} Use the system to review daily appointment schedules, cancel scheduled appointments with documented reasons, search patient records, review verified medical and diagnostic histories, and write medical reports and prescriptions.
+    
+    \item \textbf{Pathologists:} Use the system to upload test results and reports to the patient after verifying the results.
+\end{itemize}
+
+\subsection{Product Scope}
+The \textbf{Centralized Hospital Management System (CHMS)} is a web-based healthcare management platform deployed on cloud infrastructure that integrates Doctor appointments, billing, Diagnostic reports and test reports for easier access and help the system be a bit more bearable for the patients.
+
+\subsubsection{Core Capabilities Within Scope}
+\begin{itemize}
+    \item \textbf{Online Appointment Scheduling:} Enables patients to browse doctors, view open time slots, and book conflict-free appointments online, while allowing doctors and assistants to view schedules, cancel appointments with mandatory reasons, and block unavailable days or slots.
+    
+    \item \textbf{Centralized Electronic Medical and Diagnostic Records:} Stores doctors' diagnoses, prescriptions, and pathology reports in a central cloud database, complete with chronological sorting, immutable record locking, and patient uploads for outside test results.
+    
+    \item \textbf{Laboratory and Pathology Workflow Management:} Tracks diagnostic test requests from order to completion, checks bill payment status before sample collection, requires pathologist verification before results become visible to doctors.
+    
+    \item \textbf{Billing and Simulated Online Payment Processing:} Allows accountants to generate itemized bills and track outstanding balances, while enabling patients to settle bills online through a simulated third-party payment gateway (modeled after mobile financial services such as bKash) alongside manual counter payments, generating real-time ``Paid'' and ``Unpaid'' digital receipts visible to authorized staff and the patients.
+    
+    \item \textbf{Security, Role-Based Access, and Audit Logging:} Enforces strict role separation across all user groups and maintains a centralized access log recording every view or modification of patient records.
+    
+\end{itemize}
+
+\subsubsection{Business Goals and Objectives}
+\begin{itemize}
+
+    \item \textbf{Improve Patient Experience and Accessibility:} Eliminate the need for patients to make phone calls days in advance to book appointment, prevent lost medical binders over multi-month checkup cycles, and remove the need for patients to walk back and forth to billing counters to pay fees.
+    
+    \item \textbf{Increase Clinical and Diagnostic Accuracy:} Provide doctors with immediate access to complete, verified patient histories and ensure pathologists only release validated, verified test reports.
+    
+    \item \textbf{Centralize Financial Control and Transparency:} Give accounts staff full visibility into generated bills, pending revenue, and payment histories while allowing staff across departments to verify payment receipts without manual paperwork.
+    
+    \item \textbf{Ensure Operational Resilience and Data Security:} Protect sensitive patient data through strict role permissions, while preserving seamless fallback to manual operations so hospital care is never disrupted.
+    
+\end{itemize}
+
+\subsection{Risk Definitions}
+To ensure safe and reliable hospital operations, the following key risks are identified upfront so the system can include safeguards against them:
+
+\begin{itemize}
+
+    \item \textbf{Wrong Diagnosis from Unchecked or Altered Reports:} If doctors see unverified test reports or if saved records are edited or deleted, patients could receive unsafe treatment.
+    
+    \item \textbf{Hospital Operations Halting During Downtime:} If servers go down and staff rely entirely on the software, appointments, tests, and billing could stop completely.
+    
+    \item \textbf{Unauthorized Access to Patient Data:} Without strict permission controls, staff or outsiders could view confidential medical histories or billing records they are not authorized to see.
+    
+    \item \textbf{Unpaid Tests or Payment Errors:} If billing and lab records are out of sync, tests might be run without payment, or failed online payments could be marked as paid.
+    
+    \item \textbf{Double-Booked or Missed Appointments:} Simultaneous bookings or uncommunicated cancellations could cause scheduling conflicts or wasted patient trips.
+    
+    \item \textbf{Staff and Patient Resistance:} Users familiar with paper binders and phone bookings may struggle with or avoid a complex digital system.
+    
+    \item \textbf{Data Loss:} Server failures or accidental errors could erase vital patient records and payment histories.
+    
+\end{itemize}
+
+\section{Overall Description}
+
+The \textbf{Centralized Hospital Management System (CHMS)} is a web-based software product built from scratch that integrates Doctor appointments, billing, Diagnostic reports and test reports for easier access and help the system be a bit more bearable for the patients. Rather than replacing existing manual system, it is designed to run alongside manual operations as a supportive digital layer so that patient care is never disrupted if the software or network goes offline. It also integrates a simulated online payment gateway (modeled after mobile financial services such as bKash) alongside traditional counter payments.
+
+\subsection{User Classes and Characteristics}
+
+\subsubsection{Primary Users}
+\begin{itemize}
+    \item \textbf{Patients:} General public users with varying levels of technical comfort who access the system via web browsers to book appointments, view prescriptions, pay hospital bills, and upload outside lab reports. They require a simple, straightforward interface.
+    
+    \item \textbf{Doctors (including Ward Doctors):} Medical practitioners who use the system daily during clinic and ward rounds to check schedules, review chronological patient histories and verified lab results, and write locked medical reports and prescriptions.
+    
+    \item \textbf{Pathologists:} Upload Test report and results to patients after verifying the results.
+    
+    \item \textbf{Accountants:} Finance staff responsible for looking up patient service records, generating itemized bills, monitoring unpaid or partially paid balances, and reviewing online and counter transactions.
+\end{itemize}
+
+\subsubsection{Secondary Users}
+\begin{itemize}
+    \item \textbf{Doctors' Assistants:} Administrative staff who manage their specific doctor's schedules, cancel or block appointment slots, and check bill payment receipts.
+    
+    \item \textbf{Ward Nurses:} Clinical support staff who view prescriptions and medical reports strictly for patients assigned to their specific ward.
+    
+    \item \textbf{Pharmacy Staff:} Pharmacy staff who check patient prescriptions to give medications.
+    
+    \item \textbf{IT Management / System Administrators:} Technical staff responsible for creating staff accounts, assigning role permissions, managing cloud database, and running late-night maintenance.
+\end{itemize}
+
+\subsection{User Needs}
+\begin{itemize}
+    \item \textbf{Patients} need to be able to book confirmed, conflict-free doctor appointments online without calling reception days in advance, view and print their prescriptions and payment receipts anytime, settle bills online easily, and upload outside test reports without losing track of paper binders.
+    
+    \item \textbf{Doctors} need immediate access to a patient's complete, verified medical and diagnostic history to make safe clinical decisions, along with a reliable way to record unalterable diagnoses and prescriptions.
+    
+    \item \textbf{Pathologists} need to be able to make test reports using test results, automated input and reference-range checks to prevent typing mistakes, and a verification step so unreviewed reports never reach doctors.
+    
+    \item \textbf{Accountants} need a fast way to generate accurate itemized bills from patient service records and track all unpaid or partially paid bills in one place.
+    
+    \item \textbf{Support Staff (Assistants, Ward Nurses, Pharmacy Staff)} need quick, read-only access to the exact patient details, prescriptions, schedules, or payment statuses relevant to their daily tasks, plus schedule-blocking tools for doctor's assistants.
+    
+    \item \textbf{IT Management} needs centralized control over user roles, and safe maintenance windows so the system stays secure and available without disrupting hospital work.
+\end{itemize}
+
+\subsection{Operating Environment}
+
+\subsubsection{Client and Browser Environment}
+\begin{itemize}
+    \item \textbf{OS-Independent Web Access:} Because CHMS is a browser-based web application, it operates independently of the underlying operating system across hospital workstations, laptops, tablets, and patients' smartphones.
+    
+    \item \textbf{Supported Web Browsers:} Compatible with modern versions of Google Chrome, Mozilla Firefox, Microsoft Edge, and Safari with JavaScript and cookies enabled.
+    
+    \item \textbf{Client-Side Runtime:} Built with React and TypeScript (bundled via Vite), utilizing Browser Local Storage for lightweight client-side state persistence.
+\end{itemize}
+
+\subsubsection{Application Server and Deployment Environment}
+\begin{itemize}
+    \item \textbf{Backend API:} Python FastAPI REST service utilizing Pydantic for request/response validation, SQLModel as the ORM layer, and auto-generated OpenAPI/Swagger documentation (/api/docs).
+    
+    \item \textbf{Cloud Hosting and CI/CD:} Deployed as a monorepo on Vercel (vercel.json), serving both the static React frontend and serverless FastAPI backend with automated GitHub CI/CD builds on pushes to default branch.
+\end{itemize}
+
+\subsubsection{Database and Storage Environment}
+\begin{itemize}
+    \item \textbf{Production Database:} Cloud-hosted PostgreSQL on Supabase, connecting through Supavisor transaction pooling (port 6543) using SQLAlchemy NullPool and the psycopg[binary] driver.
+    
+    \item \textbf{Local Development and Migrations:} SQLite for local development and testing, with Alembic managing version-controlled database schema migrations.
+\end{itemize}
+
+\subsubsection{Network and External Interoperability}
+\begin{itemize}
+    \item \textbf{Connectivity and Offline Resilience:} Requires an active internet connection (Ethernet, Wi-Fi, or mobile data) capable of uploading and downloading diagnostic attachments up to 10~MB, while preserving manual paper workflows as an immediate fallback during outages.
+    
+    \item \textbf{API and Gateway Integration:} Utilizes RESTful JSON APIs to connect the frontend client with the simulated third-party payment gateway and support future external hospital or banking integrations.
+\end{itemize}
+
+\subsubsection{Security Runtime Environment}
+\begin{itemize}
+    \item \textbf{Transport and HTTP Hardening:} Enforces HTTPS/TLS encryption for all data in transit alongside strict HTTP security headers (HSTS, X-Frame-Options, X-Content-Type-Options).
+    
+    \item \textbf{Authentication and Access Enforcement:} Secures sessions using PyJWT access tokens, HttpOnly (Secure, SameSite=Strict) refresh token cookies with rotation, Argon2 password hashing (pwdlib[argon2]), Role-Based Access Control (RBAC), and a 15-minute lockout after 5 failed login attempts.
+\end{itemize}
+
+\subsection{Constraints}
+\begin{itemize}
+    \item \textbf{Parallel Manual Operation:} The system must not force exclusive digital dependency; hospital staff must still be able to run appointments, tests, and counter billing manually if the server goes down.
+    
+    \item \textbf{Strict Role-Based Access Control (RBAC):} Users may only access functions and patient records permitted for their assigned role, and staff accounts can only be created and assigned roles manually by IT Management.
+    
+    \item \textbf{Record Immutability and Auditability:} Saved medical reports and released pathology reports cannot be edited or deleted (corrections must be added as linked new reports), and every view or modification of patient data must be logged.
+    
+    \item \textbf{File Upload Limits:} Pathology report attachments and uploaded files must adhere to supported file formats and a maximum size limit of 10~MB.
+    
+    \item \textbf{Maintenance Window Restrictions:} Non-emergency system updates and database changes requiring downtime must be scheduled late at night during lowest hospital usage.
+    
+    \item \textbf{Simulated Payment Scope:} Online payments are processed through a simulated third-party gateway rather than a live financial banking API.
+\end{itemize}
+
+\subsection{Assumptions}
+\begin{itemize}
+    \item \textbf{Reliable Hospital Hardware and Basic Internet:} Hospital departments (reception, clinics, pathology lab, pharmacy, wards, accounts, and IT) have functioning computers and internet connectivity during normal operating hours.
+    
+    \item \textbf{Physical Copy Verification for External Reports:} Patients who upload diagnostic reports from outside hospitals will still bring the physical paper copies to their appointments for doctor verification.
+    
+    \item \textbf{Manual Notification Fallback:} When an assistant cancels an appointment online, they will also follow up with a phone call to ensure the patient is informed.
+    
+    \item \textbf{Accurate Role Provisioning:} IT Management will accurately verify staff identities and assign the correct role permissions when creating accounts.
+    
+    \item \textbf{Patient Device Access:} Patients using the online portal have basic access to a smartphone or computer with internet access, while walk-in patients without internet access can still be served via the hospital's parallel manual workflow.
+\end{itemize}
+
+\section{Requirements}
+
+\subsection{Functional Requirements}
+\subsubsection{IT Management Requirements}
+
+\begin{itemize}
+    \item \textbf{FR-IT-01 — Maintaining the System and Database:} As IT Management personnel, I want to maintain the system and cloud database, so that the hospital's central data remains secure and operational.
+    \begin{itemize}
+        \item \textbf{Confirmation:}
+        \begin{itemize}
+            \item The system operates on a centralized cloud database infrastructure.
+            \item Non-critical maintenance, schema migrations, and updates are scheduled late at night during lowest system usage, unless a critical failure threatens patient care or system operation.
+            \item Updates that can be deployed live are applied without downtime; otherwise, the system is temporarily shut off during the maintenance window while manual hospital operations continue.
+        \end{itemize}
+    \end{itemize}
+
+    \item \textbf{FR-IT-02 — Managing Access Levels:} As IT Management personnel, I want to configure different access levels for different users, so that users can only view and perform actions they are authorized for.
+    \begin{itemize}
+        \item \textbf{Confirmation:}
+        \begin{itemize}
+            \item IT Management manually creates staff accounts and assigns user roles (Doctor, Ward Doctor, Assistant, Pathologist, Accountant, Ward Nurse, Pharmacy Staff) during account provisioning.
+            \item Patients can only view their own medical reports, prescriptions, bills, and appointments, and upload external test reports.
+            \item Pathologists can enter test results, verify reports, and upload new diagnostic test reports.
+            \item Ward nurses can view prescribed medications and doctor notes strictly for patients assigned to their ward.
+            \item Pharmacy staff can view patient prescriptions.
+            \item Assistants and accountants can view payment receipts.
+            \item Doctors and ward doctors have full access to patient medical and test histories and can create new medical reports and prescriptions.
+            \item All role permissions are centrally managed by IT administrators.
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Other Staff Requirements (Assistants, Ward Nurses, Pharmacy Staff)}
+
+\begin{itemize}
+    \item \textbf{FR-STF-01 — Checking Patient Information:} As a hospital staff member, I want to check patient information relevant to my role, so that I can assist with daily hospital tasks.
+    \begin{itemize}
+        \item \textbf{Confirmation:}
+        \begin{itemize}
+            \item Staff can search for patients using their unique patient ID or registered phone number.
+            \item Ward nurses can view prescriptions and medical reports only for patients assigned to their ward.
+            \item Assistants can view appointments, payment receipts, and general information for patients assigned to their specific doctor.
+            \item Pharmacy staff can view patient prescriptions to dispense medication.
+            \item Ward doctors hold the same clinical viewing and reporting permissions as doctors.
+            \item Support staff views are read-only, except ward doctors (who can add medical reports and prescriptions) and assistants (who can update or cancel their doctor's appointment schedule).
+        \end{itemize}
+    \end{itemize}
+
+    \item \textbf{FR-STF-02 — Verifying Bill Receipts:} As a staff member, I want to check digital bill receipts, so that I can confirm whether a patient has paid.
+    \begin{itemize}
+        \item \textbf{Confirmation:}
+        \begin{itemize}
+            \item Every receipt displays a clear status tag (``Paid'' or ``Unpaid''), and all current and previous receipts are listed without exception.
+            \item Authorized staff can view and print digital receipts directly from the central database.
+            \item If an online payment fails or has not been completed, the status remains ``Unpaid'', requiring the patient to retry online or pay at the manual accounts counter.
+        \end{itemize}
+    \end{itemize}
+
+    \item \textbf{FR-STF-03 — Managing and Canceling Appointments:} As a doctor's assistant, I want to cancel or block appointments on my doctor's schedule when necessary, so that patients do not visit when the doctor is unavailable.
+    \begin{itemize}
+        \item \textbf{Confirmation:}
+        \begin{itemize}
+            \item Assistants can cancel scheduled appointments at most one day before the scheduled slot takes place.
+            \item Canceling an appointment sends a cancellation notification to the patient's system dashboard (supplemented by a manual phone call from the assistant).
+            \item A canceled appointment immediately frees the time slot in the system schedule unless blocked.
+            \item An optional text field allows the assistant to record a reason for cancellation.
+            \item Assistants can block specific slots, days, or weeks on their doctor's schedule so no new appointments can be booked during that period.
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Patient Requirements}
+
+\begin{itemize}
+    \item \textbf{FR-PAT-01 — Booking an Appointment:} As a Patient, I want to book an appointment online, so that I can consult a doctor at a suitable date and time.
+    \begin{itemize}
+        \item \textbf{Confirmation:}
+        \begin{itemize}
+            \item Patients must log in before booking an appointment.
+            \item Patients can select a doctor from the available doctors list and view open dates and time slots.
+            \item The system verifies slot availability before confirming and prevents multiple patients from booking the same doctor's slot simultaneously.
+            \item Patients must provide required appointment details before submitting a booking.
+            \item Upon successful booking, the system generates a unique appointment ID, sets the status to ``Confirmed'', displays the appointment summary, and sends a dashboard confirmation notification.
+            \item If a selected slot becomes unavailable, the system prompts the patient to choose another slot.
+        \end{itemize}
+    \end{itemize}
+
+    \item \textbf{FR-PAT-02 — Viewing Prescriptions:} As a Patient, I want to view my prescriptions, so that I can follow the doctor's instructions and understand my prescribed medications.
+    \begin{itemize}
+        \item \textbf{Confirmation:}
+        \begin{itemize}
+            \item Logged-in patients can access only their own current and previous prescriptions, ordered newest first.
+            \item Each prescription displays the doctor's name, issue date, patient information, prescribed medicine names, dosage, frequency, duration, and additional medical instructions.
+            \item Patients can download or print their prescriptions, but cannot edit or delete them.
+            \item If no prescriptions exist, the system displays an appropriate empty-state message.
+        \end{itemize}
+    \end{itemize}
+
+    \item \textbf{FR-PAT-03 — Paying Hospital Bills:} As a Patient, I want to view and pay my hospital bills online, so that I can complete payments without waiting in queues.
+    \begin{itemize}
+        \item \textbf{Confirmation:}
+        \begin{itemize}
+            \item Logged-in patients can view all current and past bills, each showing a unique bill ID, bill date, patient information, itemized service charges (consultation, diagnostic tests, medicines, other services), total payable amount, and status (``Paid'' or ``Unpaid'').
+            \item Patients can select an ``Unpaid'' bill and complete payment via the simulated third-party online payment gateway.
+            \item Upon successful payment, the system automatically updates the bill status to ``Paid'' and generates a downloadable, printable digital receipt.
+            \item If payment fails, the bill remains ``Unpaid'' and no paid receipt is issued.
+        \end{itemize}
+    \end{itemize}
+
+    \item \textbf{FR-PAT-04 — Uploading External Test Reports:} As a Patient, I want to upload diagnostic test reports conducted at outside hospitals, so that my doctor can view them alongside my hospital records.
+    \begin{itemize}
+        \item \textbf{Confirmation:}
+        \begin{itemize}
+            \item Logged-in patients can upload supported report files (up to 10~MB) to their personal medical record.
+            \item The system reminds the patient to still bring the physical copy of the external report to their appointment for doctor verification.
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Accountant Requirements}
+
+\begin{itemize}
+    \item \textbf{FR-ACC-01 — Generating Patient Bills:} As an Accountant, I want to generate itemized patient bills, so that patients can view their charges and complete payments.
+    \begin{itemize}
+        \item \textbf{Confirmation:}
+        \begin{itemize}
+            \item Logged-in accountants can search patients by unique patient ID or registered phone number and view their hospital service records.
+            \item Accountants can add line-item charges (consultation fees, diagnostic tests, medicines, admission fees, and other services), and the system automatically calculates the total payable amount.
+            \item Each generated bill is assigned a unique bill ID, displays patient details, bill date, itemized charges, and total amount, and is saved with an initial status of ``Unpaid''.
+            \item Saved bills immediately appear in the patient's account and remain viewable by accountants for reference.
+        \end{itemize}
+    \end{itemize}
+
+    \item \textbf{FR-ACC-02 — Viewing Unpaid Bills:} As an Accountant, I want to view and filter unpaid bills, so that I can monitor pending hospital revenue.
+    \begin{itemize}
+        \item \textbf{Confirmation:}
+        \begin{itemize}
+            \item The unpaid bills view lists all bills with ``Unpaid'' or partially paid status, displaying patient name, bill ID, bill date, total amount, and outstanding balance.
+            \item Accountants can search by patient ID, patient name, or bill ID, filter by date or patient details, and view partially paid bills separately from fully unpaid bills.
+            \item Accountants can inspect the payment history of each bill and download or print unpaid bill lists.
+            \item Once a bill is paid in full, it is automatically removed from the unpaid list; if no unpaid bills exist, an appropriate message is displayed.
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Common Clinical Authentication and Audit Requirements (Doctor and Pathologist)}
+
+\begin{itemize}
+    \item \textbf{FR-CLN-01 — Secure Login:} As a Doctor or Pathologist, I want to log in with my user ID and password, so that only I can access my account.
+    \begin{itemize}
+        \item \textbf{Confirmation:}
+        \begin{itemize}
+            \item Entering valid credentials opens the user's role-specific dashboard.
+            \item Entering invalid credentials displays ``Invalid user ID or password'' without creating a session.
+            \item No clinical function or patient record is accessible without authentication.
+        \end{itemize}
+    \end{itemize}
+
+    \item \textbf{FR-CLN-02 — Role-Based Access Enforcement:} As a clinical user, I want to see and access only the functions of my role, so that unauthorized data cannot be reached.
+    \begin{itemize}
+        \item \textbf{Confirmation:}
+        \begin{itemize}
+            \item A Doctor's interface hides Pathologist functions, and a Pathologist's interface hides Doctor functions.
+            \item Attempting to access another role's URL or endpoint directly returns an ``Access denied'' error.
+        \end{itemize}
+    \end{itemize}
+
+    \item \textbf{FR-CLN-03 — Access Logging:} As the hospital, I want every view or modification of patient data recorded, so that unauthorized access or misuse can be traced.
+    \begin{itemize}
+        \item \textbf{Confirmation:}
+        \begin{itemize}
+            \item Whenever a user views or modifies a patient's record, the system writes an immutable audit log entry containing the user ID, patient ID, action performed, and timestamp.
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Doctor Requirements}
+
+\begin{itemize}
+    \item \textbf{FR-DOC-01 — Viewing Appointment Schedule:} As a Doctor, I want to view my appointments for a chosen date, so that I can plan my clinic session.
+    \begin{itemize}
+        \item \textbf{Confirmation:}
+        \begin{itemize}
+            \item Selecting a date displays only the logged-in doctor's appointments for that date, showing time slot, patient name, patient ID, and appointment status.
+            \item Dates with no scheduled visits display ``No appointments''.
+        \end{itemize}
+    \end{itemize}
+
+    \item \textbf{FR-DOC-02 — Canceling Appointment:} As a Doctor, I want to cancel a scheduled appointment when necessary, so that the patient's slot is not wasted.
+    \begin{itemize}
+        \item \textbf{Confirmation:}
+        \begin{itemize}
+            \item For an appointment in ``Scheduled'' status, entering a mandatory reason and confirming updates the status to ``Cancelled'' and records the reason, doctor ID, and cancellation timestamp.
+            \item Submitting a cancellation without a reason is blocked.
+        \end{itemize}
+    \end{itemize}
+
+    \item \textbf{FR-DOC-03 — Blocking Invalid Cancellation:} As a Doctor, I want the system to prevent canceling appointments that are already finished, so that historical schedules remain accurate.
+    \begin{itemize}
+        \item \textbf{Confirmation:}
+        \begin{itemize}
+            \item Attempting to cancel an appointment in ``Completed'', ``Cancelled'', or ``Missed'' status is rejected, and the system displays its current status.
+        \end{itemize}
+    \end{itemize}
+
+    \item \textbf{FR-DOC-04 — Searching Patient:} As a Doctor, I want to search for a patient by ID or name, so that I can open the correct record.
+    \begin{itemize}
+        \item \textbf{Confirmation:}
+        \begin{itemize}
+            \item Searching by exact patient ID returns only that matching patient.
+            \item Searching by partial or full name returns all matching patients the doctor is authorized to access.
+        \end{itemize}
+    \end{itemize}
+
+    \item \textbf{FR-DOC-05 — Viewing Medical History:} As a Doctor, I want to view a patient's previous medical and verified test reports, so that I can diagnose using their complete history.
+    \begin{itemize}
+        \item \textbf{Confirmation:}
+        \begin{itemize}
+            \item The history displays all saved medical reports and all ``Released'' test reports in reverse chronological order (newest first), showing date, report type, and author.
+            \item If no records exist, the system displays ``No previous records''.
+        \end{itemize}
+    \end{itemize}
+
+    \item \textbf{FR-DOC-06 — Viewing Released Test Report:} As a Doctor, I want to open a released test report and its attached file, so that I can inspect the exact diagnostic results.
+    \begin{itemize}
+        \item \textbf{Confirmation:}
+        \begin{itemize}
+            \item Opening a ``Released'' report displays test parameter values, out-of-range flags, verifying pathologist ID, release timestamp, and the downloadable/viewable attached report file.
+        \end{itemize}
+    \end{itemize}
+
+    \item \textbf{FR-DOC-07 — Hiding Unverified Reports:} As a Doctor, I want unverified test reports hidden from my view, so that I never make clinical decisions based on unchecked results.
+    \begin{itemize}
+        \item \textbf{Confirmation:}
+        \begin{itemize}
+            \item Reports in ``Draft'' or ``Pending Verification'' status are excluded from the patient's medical history, and direct URL access returns ``Report not yet available''.
+        \end{itemize}
+    \end{itemize}
+
+    \item \textbf{FR-DOC-08 — Adding Medical Report:} As a Doctor, I want to add a medical report containing diagnosis, clinical notes, and prescriptions, so that subsequent doctors can review my findings.
+    \begin{itemize}
+        \item \textbf{Confirmation:}
+        \begin{itemize}
+            \item Saving a report with a valid diagnosis stores it in the patient's record and places it at the top of their medical history.
+            \item Saving with an empty diagnosis or an unsupported/oversized file attachment is rejected.
+        \end{itemize}
+    \end{itemize}
+
+    \item \textbf{FR-DOC-09 — Protecting Saved Reports:} As a Doctor, I want saved medical reports to be unchangeable, so that clinical records remain trustworthy.
+    \begin{itemize}
+        \item \textbf{Confirmation:}
+        \begin{itemize}
+            \item Saved medical reports automatically store the author's doctor ID and creation timestamp and provide no edit or delete controls.
+            \item Any correction must be created as a new addendum report linked to the original report, with both remaining visible.
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Pathologist Requirements}
+
+\begin{itemize}
+    \item \textbf{FR-PTH-01 — Entering Test Results:} As a Pathologist, I want to enter the results of each test parameter for a patient, so that diagnostic results are stored centrally.
+    \begin{itemize}
+        \item \textbf{Confirmation:}
+        \begin{itemize}
+            \item Saving valid parameter values creates a ``Draft'' test report associated with the patient.
+            \item A ``Draft'' report can be reopened and edited by the pathologist prior to verification submission.
+        \end{itemize}
+    \end{itemize}
+
+    \item \textbf{FR-PTH-02 — Validating Results:} As a Pathologist, I want the system to validate my result entries, so that typing errors are caught before report release.
+    \begin{itemize}
+        \item \textbf{Confirmation:}
+        \begin{itemize}
+            \item Leaving a mandatory field blank or entering non-numeric text into a numeric parameter field blocks saving and highlights the invalid field.
+            \item Values falling outside the parameter's defined reference range are saved with a visible out-of-range flag.
+        \end{itemize}
+    \end{itemize}
+
+    \item \textbf{FR-PTH-03 — Uploading Test Report:} As a Pathologist, I want to attach the formal diagnostic report file and submit it for verification, so that it can be reviewed before release.
+    \begin{itemize}
+        \item \textbf{Confirmation:}
+        \begin{itemize}
+            \item Attaching a valid report file and selecting ``Submit for verification'' updates the report status from ``Draft'' to ``Pending Verification''.
+            \item Files of an unsupported format or exceeding 10~MB are rejected, and the report remains in ``Draft'' status.
+        \end{itemize}
+    \end{itemize}
+
+    \item \textbf{FR-PTH-04 — Releasing Verified Report:} As a Pathologist, I want to approve a verified report, so that the patient and doctor can view the final results.
+    \begin{itemize}
+        \item \textbf{Confirmation:}
+        \begin{itemize}
+            \item Approving a ``Pending Verification'' report sets its status to ``Released'' and makes it immediately visible in the patient's record and the doctor's history view.
+        \end{itemize}
+    \end{itemize}
+
+    \item \textbf{FR-PTH-05 — Rejecting Report at Verification:} As a Pathologist, I want to send a report back with a reason when I detect an error, so that it is corrected before release.
+    \begin{itemize}
+        \item \textbf{Confirmation:}
+        \begin{itemize}
+            \item Rejecting a ``Pending Verification'' report with a mandatory reason returns its status to ``Draft'' and keeps it hidden from doctors and patients.
+        \end{itemize}
+    \end{itemize}
+
+    \item \textbf{FR-PTH-06 — Locking Released Report:} As the hospital, I want released diagnostic reports to record who verified them and be locked against edits, so that test results cannot be altered silently.
+    \begin{itemize}
+        \item \textbf{Confirmation:}
+        \begin{itemize}
+            \item A ``Released'' report permanently displays the verifying pathologist's ID and verification timestamp, and no user role is offered edit or delete controls.
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+
+\subsection{Non-Functional Requirements}
+
+\subsubsection{Performance Requirements}
+\begin{itemize}
+    \item \textbf{NFR-PERF-01 — API and Page Response Time:} Standard read and search queries (such as loading appointment schedules, patient histories, prescriptions, or unpaid bill lists) shall complete within 2 seconds under normal hospital network conditions.
+    \item \textbf{NFR-PERF-02 — Concurrent Slot Booking Integrity:} Appointment slot reservations and database transactions (handled via PostgreSQL transaction pooling) shall process atomically so concurrent booking requests cannot double-book the same doctor time slot.
+    \item \textbf{NFR-PERF-03 — File Upload Responsiveness:} Diagnostic report file uploads up to the 10~MB limit shall complete cleanly with clear progress or validation feedback within 10 seconds on a standard 5~Mbps connection.
+\end{itemize}
+
+\subsubsection{Safety Requirements}
+\begin{itemize}
+    \item \textbf{NFR-SAFE-01 — Clinical Isolation of Unverified Results:} Test reports in ``Draft'' or ``Pending Verification'' state shall never be exposed to doctors or patients, preventing clinical decisions based on unverified diagnostic data.
+    \item \textbf{NFR-SAFE-02 — Immutability of Clinical and Diagnostic Records:} Saved medical reports and ``Released'' pathology reports shall be strictly write-once; any post-save amendment must be recorded as a linked addendum rather than overwriting original medical history.
+    \item \textbf{NFR-SAFE-03 — Safe Offline Fallback:} System downtime or internet interruptions shall not halt hospital care; all core clinical, laboratory, and counter-billing workflows must remain operable via the hospital's parallel manual paper procedures.
+\end{itemize}
+
+\subsubsection{Security Requirements}
+\begin{itemize}
+    \item \textbf{NFR-SEC-01 — Password Hashing and Session Protection:} All user passwords shall be hashed using Argon2 (\texttt{pwdlib[argon2]}), and authenticated sessions shall use short-lived \texttt{PyJWT} access tokens paired with \texttt{HttpOnly}, \texttt{Secure}, \texttt{SameSite=Strict} refresh token cookies.
+    \item \textbf{NFR-SEC-02 — Brute-Force Protection:} Login endpoints shall lock an account for 15 minutes after 5 consecutive failed authentication attempts.
+    \item \textbf{NFR-SEC-03 — Transport Encryption and HTTP Security Headers:} All client-server traffic shall be encrypted over HTTPS/TLS, and responses shall enforce \texttt{HSTS}, \texttt{X-Frame-Options}, and \texttt{X-Content-Type-Options} headers.
+    \item \textbf{NFR-SEC-04 — Role-Based Access Control and Audit Trail:} Every API endpoint shall verify the caller's role permissions before returning data, and every view or write operation on patient records shall be recorded in an append-only access log.
+\end{itemize}
+
+\subsubsection{Quality and Reliability Requirements}
+\begin{itemize}
+    \item \textbf{NFR-QUAL-01 — Availability and Maintenance Windows:} The system shall target high availability during daytime hospital clinic hours, restricting disruptive updates or database migrations to late-night low-usage windows.
+    \item \textbf{NFR-QUAL-02 — Usability for Non-Technical Users:} Patient-facing interfaces (appointment booking, prescription viewing, and simulated gateway payments) shall require minimal training and provide clear status indicators (e.g., ``Confirmed'', ``Paid'', ``Unpaid'') and actionable error messages.
+    \item \textbf{NFR-QUAL-03 — Maintainability and Schema Traceability:} Backend API endpoints shall remain documented via OpenAPI/Swagger (\texttt{/api/docs}), and all production PostgreSQL schema changes shall be version-controlled through Alembic migrations.
+\end{itemize}
+
+\end{document}
+
+```
