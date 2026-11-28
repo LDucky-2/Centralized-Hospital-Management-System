@@ -32,8 +32,9 @@ class PatientRepository:
 
     def create(self, patient: Patient, account: Account) -> Patient:
         self.session.add(patient)
-        self.session.add(account)
         try:
+            self.session.flush()
+            self.session.add(account)
             self.session.commit()
         except IntegrityError as exc:
             self.session.rollback()
