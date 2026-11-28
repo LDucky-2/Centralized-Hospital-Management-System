@@ -143,6 +143,7 @@ export const apiService = {
     request<unknown[]>(`${APPOINTMENTS}/doctor/${doctorId}?appointment_date=${date}`),
   getMyAppointments: () => request<unknown[]>(`${APPOINTMENTS}/my`),
   getDoctors: () => request<unknown[]>(`${APPOINTMENTS}/doctors`),
+  getAssignedDoctor: () => request<{ id: string; login_id: string }>(`${APPOINTMENTS}/assigned-doctor`),
   getAvailableSlots: (doctorId: string, date: string) =>
     request<string[]>(`${APPOINTMENTS}/available/${doctorId}?appointment_date=${date}`),
   createAppointment: (data: unknown) => post<unknown>(APPOINTMENTS, data),
@@ -168,7 +169,10 @@ export const apiService = {
   createPrescription: (patientId: string) => post<unknown>(PRESCRIPTIONS, { patient_id: patientId }),
   getMedicalReports: () => request<unknown[]>(`${REPORTS}/medical`),
   createMedicalReport: (patientId: string) => post<unknown>(`${REPORTS}/medical`, { patient_id: patientId }),
-  createExternalReport: (patientId: string) => post<unknown>(`${REPORTS}/external`, { patient_id: patientId }),
+  createExternalReport: (patientId: string) => post<unknown>(
+    `${REPORTS}/external`,
+    patientId ? { patient_id: patientId } : {},
+  ),
   getTestItems: () => request<unknown[]>(`${BILLING}/test-items`),
   getBills: () => request<unknown[]>(`${BILLING}/bills`),
   createBill: (patientId: string, lineItems: unknown[]) =>

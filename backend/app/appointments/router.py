@@ -11,6 +11,7 @@ from app.auth.models import Account, AccountRole, AccountState
 from app.database import SessionDep
 from app.errors import ForbiddenError, NotFoundError
 from sqlmodel import select
+from app.staff.models import AssistantAssignment
 
 
 router = APIRouter(prefix="/api/v1/appointments", tags=["appointments"])
@@ -27,6 +28,21 @@ def list_outpatient_doctors(account: CurrentAccount, session: SessionDep):
         )
     ).all()
     return [{"id": str(doctor.id), "name": f"Doctor {doctor.login_id}", "login_id": doctor.login_id} for doctor in doctors]
+
+
+@router.get("/assigned-doctor")
+def assigned_doctor(account: CurrentAccount, session: SessionDep):
+    if account.role != AccountRole.ASSISTANT:
+        raise ForbiddenError("Access denied")
+    assignment = session.exec(
+        select(AssistantAssignment).where(AssistantAssignment.assistant_id == account.id)
+    ).first()
+    if assignment is None:
+        raise NotFoundError("No Doctor is assigned")
+    doctor = session.get(Account, assignment.doctor_id)
+    if doctor is None:
+        raise NotFoundError("Assigned Doctor not found")
+    return {"id": str(doctor.id), "login_id": doctor.login_id}
 
 
 @router.get("/my")
@@ -72,6 +88,12 @@ def doctor_schedule(
         raise ForbiddenError("Access denied")
     if account.role == AccountRole.DOCTOR and account.id != doctor_id:
         raise ForbiddenError("Access denied")
+    if account.role == AccountRole.ASSISTANT:
+        assignment = service.repository.session.exec(
+            select(AssistantAssignment).where(AssistantAssignment.assistant_id == account.id)
+        ).first()
+        if assignment is None or assignment.doctor_id != doctor_id:
+            raise ForbiddenError("Access denied")
     return service.repository.list_for_doctor(doctor_id, appointment_date)
 
 
@@ -121,7 +143,7 @@ def update_status(
 ):
     if account.role not in {AccountRole.DOCTOR, AccountRole.ASSISTANT, AccountRole.IT_ADMIN}:
         raise ForbiddenError("Access denied")
-    return service.update_status(appointment_id, data)
+    return service.update_status(appointment_id, data, account)
 
 
 @router.post("/doctor/{doctor_id}/block")

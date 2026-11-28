@@ -23,6 +23,9 @@ export default function AppointmentsPage() {
         if (selectedDoctor) {
           setSlots(await apiService.getAvailableSlots(selectedDoctor, date) as string[]);
         }
+      } else if (account.role === "ASSISTANT") {
+        const doctor = await apiService.getAssignedDoctor();
+        setAppointments(await apiService.getAppointments(doctor.id, date) as Appointment[]);
       } else {
         setAppointments(await apiService.getAppointments(account.id, date) as Appointment[]);
       }

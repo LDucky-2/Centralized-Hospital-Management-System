@@ -3,4 +3,4 @@ from sqlmodel import SQLModel
 
 
 class ReportPlaceholderCreate(SQLModel):
-    patient_id: UUID
+    patient_id: UUID | None = None

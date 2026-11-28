@@ -5,12 +5,27 @@ from app.appointments.models import Appointment, AppointmentStatus, ScheduleBloc
 from app.appointments.repository import AppointmentRepository
 from app.appointments.schemas import AppointmentCreate, AppointmentStatusUpdate, ScheduleBlockCreate
 from app.auth.models import Account, AccountRole
+from app.staff.models import AssistantAssignment
+from sqlmodel import select
 from app.errors import BadRequestError, ConflictError, ForbiddenError, NotFoundError
 
 
 class AppointmentService:
     def __init__(self, repository: AppointmentRepository) -> None:
         self.repository = repository
+
+    def assert_assistant_scope(self, actor: Account, doctor_id: UUID) -> None:
+        if actor.role != AccountRole.ASSISTANT:
+            return
+        assignment = self.repository.session.exec(
+            select(AssistantAssignment).where(AssistantAssignment.assistant_id == actor.id)
+        ).first()
+        if assignment is None or assignment.doctor_id != doctor_id:
+            raise ForbiddenError("Access denied")
+
+    def assert_doctor_scope(self, actor: Account, doctor_id: UUID) -> None:
+        if actor.role == AccountRole.DOCTOR and actor.id != doctor_id:
+            raise ForbiddenError("Access denied")
 
     def within_24_hours(self, appointment: Appointment) -> bool:
         start = datetime.combine(appointment.appointment_date, appointment.start_time)
@@ -19,6 +34,7 @@ class AppointmentService:
         return start - datetime.now(timezone.utc) < timedelta(hours=24)
 
     def create(self, data: AppointmentCreate, actor: Account) -> Appointment:
+        self.assert_assistant_scope(actor, data.doctor_id)
         patient_id = data.patient_id
         if actor.role == AccountRole.PATIENT:
             if actor.patient_id is None:
@@ -42,6 +58,8 @@ class AppointmentService:
         appointment = self.repository.get(appointment_id)
         if appointment is None:
             raise NotFoundError("Appointment not found")
+        self.assert_assistant_scope(actor, appointment.doctor_id)
+        self.assert_doctor_scope(actor, appointment.doctor_id)
         if actor.role == AccountRole.PATIENT and appointment.patient_id != actor.patient_id:
             raise ForbiddenError("Access denied")
         if appointment.status != AppointmentStatus.SCHEDULED:
@@ -58,6 +76,7 @@ class AppointmentService:
         appointment = self.repository.get(appointment_id)
         if appointment is None:
             raise NotFoundError("Appointment not found")
+        self.assert_assistant_scope(actor, appointment.doctor_id)
         if actor.role == AccountRole.PATIENT and appointment.patient_id != actor.patient_id:
             raise ForbiddenError("Access denied")
         if appointment.status != AppointmentStatus.SCHEDULED:
@@ -72,10 +91,12 @@ class AppointmentService:
         appointment.start_time = start_time
         return self.repository.update(appointment)
 
-    def update_status(self, appointment_id: UUID, data: AppointmentStatusUpdate) -> Appointment:
+    def update_status(self, appointment_id: UUID, data: AppointmentStatusUpdate, actor: Account) -> Appointment:
         appointment = self.repository.get(appointment_id)
         if appointment is None:
             raise NotFoundError("Appointment not found")
+        self.assert_assistant_scope(actor, appointment.doctor_id)
+        self.assert_doctor_scope(actor, appointment.doctor_id)
         if appointment.status != AppointmentStatus.SCHEDULED:
             raise BadRequestError("Terminal appointments cannot be changed")
         if data.status not in {AppointmentStatus.COMPLETED, AppointmentStatus.MISSED}:
@@ -84,6 +105,7 @@ class AppointmentService:
         return self.repository.update(appointment)
 
     def block(self, doctor_id: UUID, actor: Account, data: ScheduleBlockCreate) -> ScheduleBlock:
+        self.assert_assistant_scope(actor, doctor_id)
         if data.scope not in {"slot", "day", "week"}:
             raise BadRequestError("Scope must be slot, day, or week")
         block = ScheduleBlock(
@@ -102,6 +124,8 @@ class AppointmentService:
         appointment = self.repository.get(appointment_id)
         if appointment is None:
             raise NotFoundError("Appointment not found")
+        self.assert_assistant_scope(actor, appointment.doctor_id)
+        self.assert_doctor_scope(actor, appointment.doctor_id)
         if actor.role == AccountRole.PATIENT and appointment.patient_id != actor.patient_id:
             raise ForbiddenError("Access denied")
         if appointment.status != AppointmentStatus.CANCELLED:

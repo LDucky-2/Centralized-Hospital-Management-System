@@ -2,6 +2,7 @@ import { App as AntApp, ConfigProvider, theme } from "antd";
 import { Route, Routes } from "react-router";
 import { AuthProvider } from "./context/AuthContext";
 import { ITRoute } from "./components/ITRoute";
+import { RoleRoute } from "./components/RoleRoute";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AppLayout } from "./layouts/AppLayout";
 import LoginPage from "./pages/LoginPage";
@@ -25,13 +26,27 @@ function AppRoutes() {
         <Route path="/register" element={<RegisterPage />} />
         <Route element={<ProtectedRoute />}>
           <Route index element={<DashboardPage />} />
-          <Route path="/appointments" element={<AppointmentsPage />} />
-          <Route path="/wards" element={<WardsPage />} />
-          <Route path="/prescriptions" element={<PrescriptionsPage />} />
-          <Route path="/reports" element={<ReportsPage />} />
-          <Route path="/billing" element={<BillingPage />} />
-          <Route path="/pharmacy" element={<PharmacyPage />} />
-          <Route path="/pathology" element={<PathologyPage />} />
+          <Route element={<RoleRoute allowed={["PATIENT", "DOCTOR", "WARD_DOCTOR", "ASSISTANT", "IT_ADMIN"]} />}>
+            <Route path="/appointments" element={<AppointmentsPage />} />
+          </Route>
+          <Route element={<RoleRoute allowed={["WARD_NURSE", "IT_ADMIN"]} />}>
+            <Route path="/wards" element={<WardsPage />} />
+          </Route>
+          <Route element={<RoleRoute allowed={["PATIENT", "DOCTOR", "WARD_DOCTOR", "WARD_NURSE", "PHARMACY_STAFF", "IT_ADMIN"]} />}>
+            <Route path="/prescriptions" element={<PrescriptionsPage />} />
+          </Route>
+          <Route element={<RoleRoute allowed={["PATIENT", "DOCTOR", "WARD_NURSE", "WARD_DOCTOR", "IT_ADMIN"]} />}>
+            <Route path="/reports" element={<ReportsPage />} />
+          </Route>
+          <Route element={<RoleRoute allowed={["PATIENT", "ACCOUNTANT", "PHARMACY_STAFF", "IT_ADMIN"]} />}>
+            <Route path="/billing" element={<BillingPage />} />
+          </Route>
+          <Route element={<RoleRoute allowed={["PHARMACY_STAFF", "IT_ADMIN"]} />}>
+            <Route path="/pharmacy" element={<PharmacyPage />} />
+          </Route>
+          <Route element={<RoleRoute allowed={["PATHOLOGIST", "ACCOUNTANT", "IT_ADMIN"]} />}>
+            <Route path="/pathology" element={<PathologyPage />} />
+          </Route>
           <Route element={<ITRoute />}>
             <Route path="/staff" element={<StaffPage />} />
             <Route path="/audit" element={<AuditPage />} />

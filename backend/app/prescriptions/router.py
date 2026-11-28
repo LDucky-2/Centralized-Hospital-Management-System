@@ -9,6 +9,7 @@ from app.database import SessionDep
 from app.errors import ForbiddenError
 from app.prescriptions.models import PrescriptionPlaceholder
 from app.prescriptions.schemas import PrescriptionCreate
+from app.wards.models import WardAssignment, WardNurseAssignment
 
 
 router = APIRouter(prefix="/api/v1/prescriptions", tags=["prescriptions"])
@@ -23,7 +24,21 @@ def list_prescriptions(account: CurrentAccount, session: SessionDep):
     elif account.role in {AccountRole.DOCTOR, AccountRole.WARD_DOCTOR, AccountRole.PHARMACY_STAFF, AccountRole.IT_ADMIN}:
         statement = select(PrescriptionPlaceholder)
     elif account.role == AccountRole.WARD_NURSE:
-        statement = select(PrescriptionPlaceholder)
+        nurse_assignment = session.exec(
+            select(WardNurseAssignment).where(WardNurseAssignment.nurse_id == account.id)
+        ).first()
+        if nurse_assignment is None:
+            return []
+        patient_assignments = session.exec(
+            select(WardAssignment.patient_id).where(
+                WardAssignment.ward_id == nurse_assignment.ward_id,
+                WardAssignment.active.is_(True),
+            )
+        ).all()
+        patient_ids = [patient_id for patient_id in patient_assignments]
+        if not patient_ids:
+            return []
+        statement = select(PrescriptionPlaceholder).where(PrescriptionPlaceholder.patient_id.in_(patient_ids))
     else:
         raise ForbiddenError("Access denied")
     return list(session.exec(statement.order_by(PrescriptionPlaceholder.created_at.desc())))

@@ -21,6 +21,8 @@ def create_ward(data: WardCreate, account: CurrentAccount, service: WardServiceD
 
 @router.get("")
 def list_wards(account: CurrentAccount, service: WardServiceDep):
+    if account.role not in {AccountRole.IT_ADMIN, AccountRole.WARD_NURSE, AccountRole.WARD_DOCTOR}:
+        raise ForbiddenError("Access denied")
     return service.repository.list_wards()
 
 
@@ -35,6 +37,10 @@ def assign_nurse(data: WardNurseAssignmentCreate, account: CurrentAccount, servi
 def assign_patient(data: WardPatientAssign, account: CurrentAccount, service: WardServiceDep):
     if account.role not in {AccountRole.WARD_NURSE, AccountRole.IT_ADMIN}:
         raise ForbiddenError("Access denied")
+    if account.role == AccountRole.WARD_NURSE:
+        nurse_assignment = service.repository.get_nurse_ward(account.id)
+        if nurse_assignment is None or nurse_assignment.ward_id != data.ward_id:
+            raise ForbiddenError("Access denied")
     return service.assign_patient(data)
 
 

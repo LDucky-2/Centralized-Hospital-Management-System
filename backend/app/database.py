@@ -55,6 +55,49 @@ def get_session() -> Iterator[Session]:
                 )
             )
             session.commit()
+        demo_staff = [
+            ("1002", AccountRole.WARD_DOCTOR),
+            ("1003", AccountRole.ASSISTANT),
+            ("1004", AccountRole.PATHOLOGIST),
+            ("1005", AccountRole.ACCOUNTANT),
+            ("1006", AccountRole.WARD_NURSE),
+            ("1007", AccountRole.PHARMACY_STAFF),
+        ]
+        for login_id, role in demo_staff:
+            if session.exec(select(Account).where(Account.login_id == login_id)).first() is None:
+                session.add(
+                    Account(
+                        login_id=login_id,
+                        password_hash=hash_password("1234"),
+                        role=role,
+                        state=AccountState.ACTIVE,
+                    )
+                )
+        session.commit()
+
+        from app.staff.models import AssistantAssignment
+        from app.wards.models import Ward, WardNurseAssignment
+
+        demo_assistant = session.exec(select(Account).where(Account.login_id == "1003")).first()
+        demo_doctor = session.exec(select(Account).where(Account.login_id == "1001")).first()
+        if demo_assistant and demo_doctor:
+            if session.exec(select(AssistantAssignment).where(AssistantAssignment.assistant_id == demo_assistant.id)).first() is None:
+                session.add(AssistantAssignment(assistant_id=demo_assistant.id, doctor_id=demo_doctor.id))
+
+        demo_ward = session.exec(select(Ward).where(Ward.name == "General Ward")).first()
+        if demo_ward is None:
+            demo_ward = Ward(name="General Ward")
+            session.add(demo_ward)
+            session.flush()
+
+        demo_nurse = session.exec(select(Account).where(Account.login_id == "1006")).first()
+        if demo_nurse:
+            assignment = session.exec(
+                select(WardNurseAssignment).where(WardNurseAssignment.nurse_id == demo_nurse.id)
+            ).first()
+            if assignment is None:
+                session.add(WardNurseAssignment(nurse_id=demo_nurse.id, ward_id=demo_ward.id))
+        session.commit()
     with Session(engine) as session:
         yield session
 

@@ -105,6 +105,40 @@ def test_registration_links_account_to_materialized_patient(client, engine):
         assert str(account.patient_id) == patient["id"]
 
 
+def test_patient_cannot_create_clinical_or_billing_objects(client):
+    patient = register_patient(client)
+    login = client.post("/api/v1/auth/login", json={"login_id": patient["patient_id"], "password": "1234"})
+    headers = {"Authorization": f"Bearer {login.json()['access_token']}"}
+
+    prescription = client.post(
+        "/api/v1/prescriptions",
+        headers=headers,
+        json={"patient_id": patient["id"]},
+    )
+    assert prescription.status_code == 403
+
+    medical_report = client.post(
+        "/api/v1/reports/medical",
+        headers=headers,
+        json={"patient_id": patient["id"]},
+    )
+    assert medical_report.status_code == 403
+
+    bill = client.post(
+        "/api/v1/billing/bills",
+        headers=headers,
+        json={"patient_id": patient["id"], "line_items": []},
+    )
+    assert bill.status_code == 403
+
+    external_report = client.post(
+        "/api/v1/reports/external",
+        headers=headers,
+        json={},
+    )
+    assert external_report.status_code == 200
+
+
 def test_24_hour_cancellation_boundary(engine):
     with Session(engine) as session:
         account = Account(login_id="8888", password_hash="x", role=AccountRole.DOCTOR)
