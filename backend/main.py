@@ -9,13 +9,11 @@ from fastapi.staticfiles import StaticFiles
 from app.activity.models import AuditEvent
 from app.activity.router import router as audit_router
 from app.appointments.router import router as appointments_router
-from app.auth.models import Account, AccountRole, AccountState
 from app.auth.router import router as auth_router
 from app.config import BACKEND_DIR, settings
 from app.database import engine
 from app.errors import AppError
 from app.patients.router import router as patients_router
-from app.security import hash_password
 from app.staff.router import router as staff_router
 from app.users.router import router as users_router
 from app.wards.router import router as wards_router
@@ -24,26 +22,13 @@ from app.reports.router import router as reports_router
 from app.billing.router import router as billing_router
 from app.pharmacy.router import router as pharmacy_router
 from app.pathology.router import router as pathology_router
-from sqlmodel import SQLModel, Session, select
+from sqlmodel import Session
 
 
 logger = logging.getLogger("chms")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    SQLModel.metadata.create_all(engine)
-    with Session(engine) as session:
-        existing = session.exec(select(Account).where(Account.login_id == "9999")).first()
-        if existing is None:
-            session.add(
-                Account(
-                    login_id="9999",
-                    password_hash=hash_password("9999"),
-                    role=AccountRole.IT_ADMIN,
-                    state=AccountState.ACTIVE,
-                )
-            )
-            session.commit()
     yield
 
 
