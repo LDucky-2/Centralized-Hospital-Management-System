@@ -24,13 +24,14 @@ from app.reports.router import router as reports_router
 from app.billing.router import router as billing_router
 from app.pharmacy.router import router as pharmacy_router
 from app.pathology.router import router as pathology_router
-from sqlmodel import Session, select
+from sqlmodel import SQLModel, Session, select
 
 
 logger = logging.getLogger("chms")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    SQLModel.metadata.create_all(engine)
     with Session(engine) as session:
         existing = session.exec(select(Account).where(Account.login_id == "9999")).first()
         if existing is None:
