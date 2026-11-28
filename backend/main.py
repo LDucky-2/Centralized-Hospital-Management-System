@@ -12,7 +12,7 @@ from app.appointments.router import router as appointments_router
 from app.auth.router import router as auth_router
 from app.auth.models import Account
 from app.config import BACKEND_DIR, settings
-from app.database import DATABASE_URL, engine
+from app.database import DATABASE_URL, engine, get_session
 from app.errors import AppError
 from app.patients.router import router as patients_router
 from app.staff.router import router as staff_router
@@ -123,6 +123,25 @@ def config_status() -> dict[str, bool | str]:
     except Exception as exc:
         result["account_orm_query"] = "failed"
         result["account_orm_error_type"] = type(exc).__name__
+    try:
+        generator = get_session()
+        session = next(generator)
+        seeded_count = len(session.exec(select(Account).where(Account.login_id == "9999")).all())
+        generator.close()
+        result["lazy_seed"] = "ok"
+        result["it_seed_present"] = seeded_count > 0
+    except Exception as exc:
+        result["lazy_seed"] = "failed"
+        result["lazy_seed_error_type"] = type(exc).__name__
+    try:
+        from app.security import hash_password, create_access_token
+        import uuid
+        test_hash = hash_password("1234")
+        test_token = create_access_token(uuid.uuid4(), "IT_ADMIN")
+        result["crypto"] = "ok" if test_hash.startswith("v1$") and test_token else "failed"
+    except Exception as exc:
+        result["crypto"] = "failed"
+        result["crypto_error_type"] = type(exc).__name__
     return result
 
 
