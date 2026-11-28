@@ -16,6 +16,7 @@ class PatientService:
             raise ConflictError("A patient with this phone number already exists")
         patient_id = self.repository.new_patient_id()
         patient = Patient(
+            id=uuid.uuid4(),
             patient_id=patient_id,
             name=data.name,
             phone=data.phone,

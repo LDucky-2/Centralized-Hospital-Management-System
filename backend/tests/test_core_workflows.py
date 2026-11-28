@@ -1,6 +1,6 @@
 from datetime import date, datetime, time, timedelta, timezone
 
-from sqlmodel import Session
+from sqlmodel import Session, select
 
 from app.appointments.models import Appointment, AppointmentStatus
 from app.appointments.repository import AppointmentRepository
@@ -93,6 +93,16 @@ def test_duplicate_phone_is_reported_clearly(client):
     })
     assert duplicate.status_code == 409
     assert "phone number already exists" in duplicate.json()["detail"]
+
+
+def test_registration_links_account_to_materialized_patient(client, engine):
+    patient = register_patient(client)
+    with Session(engine) as session:
+        account = session.exec(
+            select(Account).where(Account.login_id == patient["patient_id"])
+        ).first()
+        assert account is not None
+        assert str(account.patient_id) == patient["id"]
 
 
 def test_24_hour_cancellation_boundary(engine):
