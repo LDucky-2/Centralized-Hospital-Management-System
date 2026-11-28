@@ -19,3 +19,10 @@ def test_register_login_and_staff_state(client, engine):
 def test_seed_it_login(client):
     login = client.post("/api/v1/auth/login", json={"login_id": "9999", "password": "9999"})
     assert login.status_code == 200
+    staff = client.get(
+        "/api/v1/staff",
+        headers={"Authorization": f"Bearer {login.json()['access_token']}"},
+    )
+    assert staff.status_code == 200
+    it_account = next(account for account in staff.json() if account["login_id"] == "9999")
+    assert it_account["role"] == "IT_ADMIN"
