@@ -1,4 +1,4 @@
-from random import randint
+from secrets import randbelow
 
 from sqlalchemy import update
 from sqlalchemy.exc import IntegrityError
@@ -35,9 +35,13 @@ class PatientRepository:
         self.session.add(account)
         try:
             self.session.commit()
-        except IntegrityError:
+        except IntegrityError as exc:
             self.session.rollback()
-            raise ConflictError("Patient ID or phone already registered")
+            if self.get_by_phone(patient.phone):
+                raise ConflictError("A patient with this phone number already exists")
+            if self.get_by_patient_id(patient.patient_id):
+                raise ConflictError("Generated patient ID is already registered")
+            raise ConflictError("The patient could not be registered because of a database conflict") from exc
         self.session.refresh(patient)
         return patient
 
@@ -72,8 +76,12 @@ class PatientRepository:
         self.session.commit()
 
     def new_patient_id(self) -> str:
-        for _ in range(100):
-            candidate = str(randint(10_000_000, 99_999_999))
+        for _ in range(1000):
+            candidate = str(10_000_000 + randbelow(90_000_000))
             if not self.get_by_patient_id(candidate):
-                return candidate
+                existing_account = self.session.exec(
+                    select(Account).where(Account.login_id == candidate)
+                ).first()
+                if existing_account is None:
+                    return candidate
         raise RuntimeError("Unable to generate unique patient ID")

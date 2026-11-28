@@ -11,6 +11,7 @@ from app.activity.router import router as audit_router
 from app.appointments.router import router as appointments_router
 from app.auth.router import router as auth_router
 from app.auth.models import Account
+from app.auth.models import Patient
 from app.config import BACKEND_DIR, settings
 from app.database import DATABASE_URL, engine, get_session
 from app.errors import AppError
@@ -118,8 +119,10 @@ def config_status() -> dict[str, bool | str]:
     try:
         with Session(engine) as session:
             account_count = len(session.exec(select(Account).limit(100)).all())
+            patient_count = len(session.exec(select(Patient).limit(100)).all())
         result["account_orm_query"] = "ok"
         result["account_count"] = str(account_count)
+        result["patient_count"] = str(patient_count)
     except Exception as exc:
         result["account_orm_query"] = "failed"
         result["account_orm_error_type"] = type(exc).__name__

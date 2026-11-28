@@ -81,6 +81,20 @@ def test_placeholder_objects_are_persisted(client):
     assert pathology.json()["near_future_message"] == "Will be implemented in the near future"
 
 
+def test_duplicate_phone_is_reported_clearly(client):
+    patient = register_patient(client)
+    duplicate = client.post("/api/v1/patients/register", json={
+        "name": "Duplicate Patient",
+        "phone": patient["phone"],
+        "address": "Another address",
+        "date_of_birth": "1999-01-01",
+        "emergency_contact": "01800000003",
+        "password": "1234",
+    })
+    assert duplicate.status_code == 409
+    assert "phone number already exists" in duplicate.json()["detail"]
+
+
 def test_24_hour_cancellation_boundary(engine):
     with Session(engine) as session:
         account = Account(login_id="8888", password_hash="x", role=AccountRole.DOCTOR)
