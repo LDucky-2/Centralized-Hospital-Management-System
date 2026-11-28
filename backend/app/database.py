@@ -44,6 +44,17 @@ def get_session() -> Iterator[Session]:
                 )
             )
             session.commit()
+        existing_doctor = session.exec(select(Account).where(Account.login_id == "1001")).first()
+        if existing_doctor is None:
+            session.add(
+                Account(
+                    login_id="1001",
+                    password_hash=hash_password("1234"),
+                    role=AccountRole.DOCTOR,
+                    state=AccountState.ACTIVE,
+                )
+            )
+            session.commit()
     with Session(engine) as session:
         yield session
 
