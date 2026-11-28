@@ -1,29 +1,45 @@
-import { Button, Card, Form, Input, Table, Typography, message } from "antd";
+import { Button, Card, Form, Input, Select, Table, Typography, message } from "antd";
 import { useEffect, useState } from "react";
 import { apiService } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
 type Appointment = { id: string; patient_id: string; doctor_id: string; appointment_date: string; start_time: string; status: string };
+type Doctor = { id: string; name: string; login_id: string };
 
 export default function AppointmentsPage() {
   const { account } = useAuth();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [slots, setSlots] = useState<string[]>([]);
+  const [selectedDoctor, setSelectedDoctor] = useState<string>("");
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
 
   const load = async () => {
     if (!account) return;
     try {
-      setAppointments(await apiService.getAppointments(account.id, date) as Appointment[]);
+      if (account.role === "PATIENT") {
+        setAppointments(await apiService.getMyAppointments() as Appointment[]);
+        setDoctors(await apiService.getDoctors() as Doctor[]);
+        if (selectedDoctor) {
+          setSlots(await apiService.getAvailableSlots(selectedDoctor, date) as string[]);
+        }
+      } else {
+        setAppointments(await apiService.getAppointments(account.id, date) as Appointment[]);
+      }
     } catch (error) {
       message.error(error instanceof Error ? error.message : "Unable to load appointments");
     }
   };
 
-  useEffect(() => { void load(); }, [account, date]);
+  useEffect(() => { void load(); }, [account, date, selectedDoctor]);
 
   const create = async (values: { patient_id: string; doctor_id: string; start_time: string }) => {
     try {
-      await apiService.createAppointment({ ...values, appointment_date: date });
+      await apiService.createAppointment(
+        account?.role === "PATIENT"
+          ? { doctor_id: selectedDoctor, start_time: values.start_time, appointment_date: date }
+          : { ...values, appointment_date: date },
+      );
       message.success("Appointment booked");
       await load();
     } catch (error) {
@@ -35,7 +51,23 @@ export default function AppointmentsPage() {
     <Card>
       <Typography.Title level={2}>Appointments</Typography.Title>
       <Input type="date" value={date} onChange={(event) => setDate(event.target.value)} style={{ maxWidth: 220, marginBottom: 16 }} />
-      {account?.role !== "PATIENT" && (
+      {account?.role === "PATIENT" ? (
+        <Form layout="inline" onFinish={create} style={{ margin: "16px 0", flexWrap: "wrap" }}>
+          <Form.Item label="Doctor" required>
+            <Select
+              style={{ width: 220 }}
+              value={selectedDoctor || undefined}
+              placeholder="Select Doctor"
+              options={doctors.map((doctor) => ({ label: doctor.name, value: doctor.id }))}
+              onChange={(value) => setSelectedDoctor(value)}
+            />
+          </Form.Item>
+          <Form.Item name="start_time" label="Time" rules={[{ required: true }]}>
+            <Select style={{ width: 180 }} placeholder="Select 15-minute slot" options={slots.map((slot) => ({ label: slot, value: slot }))} />
+          </Form.Item>
+          <Button type="primary" htmlType="submit" disabled={!selectedDoctor}>Book</Button>
+        </Form>
+      ) : (
         <Form layout="inline" onFinish={create} style={{ margin: "16px 0", flexWrap: "wrap" }}>
           <Form.Item name="patient_id" rules={[{ required: true }]}><Input placeholder="Patient UUID" /></Form.Item>
           <Form.Item name="doctor_id" initialValue={account?.role === "DOCTOR" ? account.id : undefined} rules={[{ required: true }]}><Input placeholder="Doctor UUID" /></Form.Item>

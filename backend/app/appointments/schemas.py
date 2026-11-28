@@ -7,7 +7,7 @@ from app.appointments.models import AppointmentStatus
 
 
 class AppointmentCreate(SQLModel):
-    patient_id: UUID
+    patient_id: UUID | None = None
     doctor_id: UUID
     appointment_date: date
     start_time: time

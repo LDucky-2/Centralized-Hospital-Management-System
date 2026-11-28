@@ -4,7 +4,7 @@ from uuid import UUID
 from app.appointments.models import Appointment, AppointmentStatus, ScheduleBlock
 from app.appointments.repository import AppointmentRepository
 from app.appointments.schemas import AppointmentCreate, AppointmentStatusUpdate, ScheduleBlockCreate
-from app.auth.models import Account
+from app.auth.models import Account, AccountRole
 from app.errors import BadRequestError, ConflictError, ForbiddenError, NotFoundError
 
 
@@ -19,12 +19,19 @@ class AppointmentService:
         return start - datetime.now(timezone.utc) < timedelta(hours=24)
 
     def create(self, data: AppointmentCreate, actor: Account) -> Appointment:
+        patient_id = data.patient_id
+        if actor.role == AccountRole.PATIENT:
+            if actor.patient_id is None:
+                raise BadRequestError("Patient account is not linked to a patient record")
+            patient_id = actor.patient_id
+        if patient_id is None:
+            raise BadRequestError("Patient is required")
         if self.repository.get_slot(data.doctor_id, data.appointment_date, data.start_time):
             raise ConflictError("This appointment slot is already booked")
         if self.repository.is_blocked(data.doctor_id, data.appointment_date, data.start_time):
             raise ConflictError("This appointment slot is blocked")
         appointment = Appointment(
-            patient_id=data.patient_id,
+            patient_id=patient_id,
             doctor_id=data.doctor_id,
             appointment_date=data.appointment_date,
             start_time=data.start_time,
@@ -35,6 +42,8 @@ class AppointmentService:
         appointment = self.repository.get(appointment_id)
         if appointment is None:
             raise NotFoundError("Appointment not found")
+        if actor.role == AccountRole.PATIENT and appointment.patient_id != actor.patient_id:
+            raise ForbiddenError("Access denied")
         if appointment.status != AppointmentStatus.SCHEDULED:
             raise BadRequestError("Only Scheduled appointments can be cancelled")
         if self.within_24_hours(appointment):
@@ -49,6 +58,8 @@ class AppointmentService:
         appointment = self.repository.get(appointment_id)
         if appointment is None:
             raise NotFoundError("Appointment not found")
+        if actor.role == AccountRole.PATIENT and appointment.patient_id != actor.patient_id:
+            raise ForbiddenError("Access denied")
         if appointment.status != AppointmentStatus.SCHEDULED:
             raise BadRequestError("Only Scheduled appointments can be rescheduled")
         if self.within_24_hours(appointment):
@@ -87,10 +98,12 @@ class AppointmentService:
         self.repository.session.refresh(block)
         return block
 
-    def remove_cancelled(self, appointment_id: UUID) -> None:
+    def remove_cancelled(self, appointment_id: UUID, actor: Account) -> None:
         appointment = self.repository.get(appointment_id)
         if appointment is None:
             raise NotFoundError("Appointment not found")
+        if actor.role == AccountRole.PATIENT and appointment.patient_id != actor.patient_id:
+            raise ForbiddenError("Access denied")
         if appointment.status != AppointmentStatus.CANCELLED:
             raise BadRequestError("Only Cancelled appointments can be removed")
         self.repository.delete(appointment)

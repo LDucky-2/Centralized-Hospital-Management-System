@@ -44,6 +44,14 @@ class AppointmentRepository:
         ).order_by(Appointment.start_time)
         return list(self.session.exec(statement))
 
+    def list_for_patient(self, patient_id) -> list[Appointment]:
+        statement = (
+            select(Appointment)
+            .where(Appointment.patient_id == patient_id)
+            .order_by(Appointment.appointment_date.desc(), Appointment.start_time.desc())
+        )
+        return list(self.session.exec(statement))
+
     def get(self, appointment_id):
         return self.session.get(Appointment, appointment_id)
 
