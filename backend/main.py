@@ -22,6 +22,7 @@ from app.reports.router import router as reports_router
 from app.billing.router import router as billing_router
 from app.pharmacy.router import router as pharmacy_router
 from app.pathology.router import router as pathology_router
+from sqlalchemy import inspect, text
 from sqlmodel import Session
 
 
@@ -95,12 +96,25 @@ def health() -> dict[str, str]:
 
 @app.get("/api/config-status")
 def config_status() -> dict[str, bool | str]:
-    return {
+    result: dict[str, bool | str] = {
         "vercel": settings.VERCEL is not None,
         "database_url_configured": settings.DATABASE_URL is not None,
         "postgres_url_configured": settings.POSTGRES_URL is not None,
         "database_type": "postgresql" if DATABASE_URL.startswith(("postgresql", "postgres")) else "sqlite",
     }
+    try:
+        with engine.connect() as connection:
+            connection.execute(text("SELECT 1"))
+            table_names = sorted(inspect(connection).get_table_names())
+        result["database_connection"] = "ok"
+        result["required_tables_present"] = all(
+            name in table_names
+            for name in ("app_account", "patient", "refresh_token", "audit_event")
+        )
+    except Exception as exc:
+        result["database_connection"] = "failed"
+        result["database_error_type"] = type(exc).__name__
+    return result
 
 
 FRONTEND_DIR = BACKEND_DIR.parent / "frontend" / "dist"
