@@ -41,7 +41,13 @@ class PatientRepository:
                 raise ConflictError("A patient with this phone number already exists")
             if self.get_by_patient_id(patient.patient_id):
                 raise ConflictError("Generated patient ID is already registered")
-            raise ConflictError("The patient could not be registered because of a database conflict") from exc
+            orig = getattr(exc, "orig", exc)
+            diag = getattr(orig, "diag", None)
+            constraint = getattr(diag, "constraint_name", None)
+            raise ConflictError(
+                f"Patient registration database conflict: {type(orig).__name__}"
+                + (f" ({constraint})" if constraint else "")
+            ) from exc
         self.session.refresh(patient)
         return patient
 
