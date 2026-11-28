@@ -4,334 +4,271 @@
 
 ### User Story 1: Maintaining the System and Database
 
-- As IT Management personnel, I want to maintain the system and database, so that the hospital's central data remains secure and operational.
-  - Cloud databases are to be used, and backed up daily.
-  - Maintenance/change/updates should be done late at night when system usage is at its lowest, unless in case of critical failure that can harm the users of the patients.
-  - if a change or update can be done live then should be done live, otherwise the system has to be shut off.
+- As IT Management personnel, I want to maintain the system and database, so that CHMS remains available as an academic digital aid.
+  - Supabase PostgreSQL is used in production and SQLite is used locally.
+  - Alembic manages production schema changes.
+  - Supabase is expected to provide backups.
+  - Maintenance is performed during low usage or maintenance state, and system downtime relies on paper/manual fallback.
+  - Live-compatible changes are preferred, while disruptive changes may show a maintenance state.
 
 ### User Story 2: Managing Access Levels
 
-- As IT Management personnel, I want to configure different access levels for different users, so that users can only view the information they are authorized/need to know.
-  - IT Management manually assigns new user roles (e.g., Doctor, Assistant, Pathologist, Accounts) during account creation (not patients).
-  - Patients can only view their own reports, bills, and appointments and upload test reports if done from another hospital(but must not forget to bring the physical copy of the results).
-  - Pathologists can check previous test reports, and tests that the doctor has given to the patient and upload new test reports.
-  - Ward nurses can see prescribed medication, doctor’s comments.
-  - Pharmacy staff can check prescribed medication.
-  - Assistants and accounts staff can see payment receipts(includes anyone that normally has to check bill receipts)
-  - Doctors have full access to medical and test histories of the patients and can upload new reports.
-  - Access permissions are to be managed by IT administrators.
+- As IT Management personnel, I want to configure role and account access, so that users can only reach authorized information.
+  - IT manually assigns each staff account a 4-digit ID and exactly one role.
+  - IT can change staff roles and manage Active, Blocked, Banned, Deactivated, and Soft-deleted states.
+  - Blocking or soft-deleting a staff account invalidates active sessions immediately.
+  - IT can access all patient data and view append-only audit logs.
+  - Patients can self-register and receive an automatically generated 8-digit patient ID.
+  - Staff cannot change their own role or self-delete their account.
+  - Patient account deletion is soft deactivation and historical records remain available.
 
-## 2. Other Staff (Assistants, Pharmacy Staff, Ward Nurses, Ward doctor etc.) User Stories
+### User Story 3: Assigning Ward Nurses
 
-### User Story 1: Checking Patient Information
-
-- User Story: As staff, I want to check patient information, so that I can assist with hospital tasks according to my needs.
-  - Ward nurses can check the prescriptions and reports of the patients that are assigned to the ward same as them.
-  - Assistants can view appointments, payment receipts and general information of the patient assigned to their doctor
-  - Pharmacy staff can view patient prescriptions.
-  - Ward doctors have the same authority as doctors.
-  - Staff can search using the patient's unique ID number or registered phone number in the central database.
-  - Staff views are generally read-only.
-  - Ward doctors can update and add prescriptions.
-  - Assistants can update appointment scheduling details can cancel or make appointments.
-
-### User Story 2: Verifying Bill Receipts
-
-- User Story: As staff, I want to see the receipts of bills to see if a patient has paid, so that I can confirm payment status.
-  - Receipts show a status tag(paid or unpaid), all payment receipts(previous or current) will show up without exception.
-  - Staff can view and print digital receipts directly from the central database.
-  - The status remains marked as "Unpaid," requiring the patient to retry or pay through the manual accounts counter.
-
-### User Story 3: Managing and Canceling Appointments
-
-- User Story: As a doctor's assistant, I want to be able to cancel or block appointments if necessary, so that the patients do not come for nothing.
-  - Appointments can be cancelled by assistants at most a day before the scheduled slot takes place.
-  - A cancellation notification is sent to the patient via the online interface or system dashboard.(the assistant should also call the person)
-  - A cancelled appointment frees up the slot instantly in the system schedule.
-  - A simple text field allows assistants to optionally note the reason for cancellation if needed.
-  - Can block appointments for a (week/day/slot) so that no more appointments can be made.
+- As IT Management personnel, I want to assign or reassign Ward Nurses to wards, so that ward access follows the hospital ward structure.
+  - Only IT can assign or change the Ward Nurse-to-ward relationship.
+  - Ward Nurse access is restricted to patients with an active assignment in that ward.
 
 ---
-# 2420947 - User stories : Patient and Accountant
 
+# 2420947 - User stories : Patient and Accountant
 
 ## 1. Patient User Stories
 
+### User Story 1: Registering and Logging In
 
-### User Story 1: Booking an Appointment
+- As a Patient, I want to register and log in using my patient ID, so that I can access my own CHMS account.
+  - Registration requires name, phone number, address, date of birth, emergency contact, and password.
+  - Blood group is optional.
+  - Patient login uses only the generated 8-digit patient ID and password.
+  - Staff may search for a patient by ID, partial/full name, or phone number.
 
+### User Story 2: Updating My Profile
 
-- User Story: As a Patient, I want to book an appointment, so that I can consult a doctor at a suitable date and time.
-  - Patients must log in to their accounts before booking an appointment.
-  - Patients can select a doctor from the available doctors list.
-  - The system displays the selected doctor's available dates and time slots.
-  - Patients can choose a suitable appointment date and time.
-  - The system must prevent multiple patients from booking the same doctor's appointment slot.
-  - The system checks the availability of the selected slot before confirming the appointment.
-  - Patients must provide the necessary appointment information before submitting a booking request.
-  - After successful booking, the system generates a unique appointment ID.
-  - The appointment status is automatically marked as "Confirmed" after successful booking.
-  - Patients can view their appointment details, including doctor name, appointment date, time, and appointment ID.
-  - The system sends an appointment confirmation notification to the patient through the system dashboard.
-  - If the selected slot is unavailable, the system displays a message asking the patient to choose another slot.
+- As a Patient, I want to update allowed profile fields, so that my contact information stays current.
+  - Patients may edit name, phone number, address, date of birth, and emergency contact.
+  - Patient ID and blood group are not editable.
+  - IT/staff cannot edit patient identity/profile fields.
 
+### User Story 3: Booking an Appointment
 
-### User Story 2: Viewing Prescriptions
+- As a Patient, I want to book an outpatient Doctor appointment, so that I can reserve a 15-minute visit.
+  - Only regular/outpatient Doctors are shown.
+  - Booking requires Doctor, date, and time slot.
+  - No reason or appointment type is required.
+  - One patient is allowed per slot.
+  - Concurrent bookings cannot double-book a slot.
+  - Successful booking sets status to "Scheduled".
 
+### User Story 4: Cancelling or Rescheduling an Appointment
 
-- User Story: As a Patient, I want to view my prescriptions, so that I can follow the doctor's instructions and understand my prescribed medications.
-  - Patients must log in to their accounts to access their prescriptions.
-  - Patients can view prescriptions issued by their doctors.
-  - Each prescription should contain the doctor's name, prescription date, and patient information.
-  - The system displays prescribed medicine names, dosage, frequency, and duration.
-  - Patients can view the doctor's instructions and additional medical advice.
-  - Patients can access their previous prescriptions for future reference.
-  - Prescriptions should be arranged according to their issue dates, with the latest prescription appearing first.
-  - Patients can download or print their prescriptions for personal use.
-  - Patients can only access their own prescriptions.
-  - Patients cannot modify or delete prescriptions uploaded by doctors.
-  - If no prescription is available, the system displays an appropriate message.
+- As a Patient, I want to cancel or reschedule an appointment, so that I can update my visit.
+  - Cancellation or rescheduling is blocked within 24 hours of the appointment.
+  - Cancelling may omit a reason.
+  - The cancelled record retains actor, timestamp, and optional reason.
+  - Cancelled appointments remain visible until removed.
+  - Patients may remove their own cancelled records.
 
+### User Story 5: Viewing Prescription Placeholders
 
-### User Story 3: Paying Hospital Bills
+- As a Patient, I want to view my prescription placeholders newest first, so that I can locate historical prescription objects.
+  - Prescription creation and viewing are placeholder-only.
+  - Real medicine dosage, route, quantity, and duration fields are not implemented.
+  - PDF/print controls show "will be implemented in the near future".
+  - Patients cannot edit or delete prescription objects.
 
+### User Story 6: Viewing Bills
 
-- User Story: As a Patient, I want to pay my hospital bills, so that I can complete my payments.
-  - Patients must log in to their accounts to access their billing information.
-  - Patients can view all their previous and current hospital bills.
-  - Each bill should contain a unique bill ID, bill date, patient information, service details, and total payable amount.
-  - Bills should include relevant charges such as consultation fees, diagnostic test fees, medicine charges, and other hospital service charges.
-  - Patients can check the payment status of each bill.
-  - The system displays payment statuses such as "Paid", "Unpaid".
-  - Patients can select an unpaid bill to proceed with payment.
-  - The system provides available payment methods.
-  - After successful online payment, the system automatically updates the bill status to "Paid".
-  - If a payment fails, the system keeps the bill status as "Unpaid".
-  - The system generates a digital payment receipt after successful payment.
-  - Patients can view, download, or print their payment receipts.
+- As a Patient, I want to view my bills, so that I can see charges and payment status.
+  - Bills show a unique ID, date, itemized details, demo total, and Paid/Unpaid status.
+  - Partial payments are not supported.
+  - Manual payment is confirmed by the Accountant.
+  - Online payment and receipt download/print are placeholder/demonstration features.
 
+### User Story 7: Soft-deactivating an Account
+
+- As a Patient, I want to deactivate my account, so that I stop using the current account.
+  - Existing active ward, bill, and appointment relationships close.
+  - Historical records remain linked to the old patient ID.
+  - The patient may re-register and receive a new patient ID.
+  - The old ID may remain visible for audit and historical staff lookup only.
 
 ## 2. Accountant User Stories
 
-
 ### User Story 1: Generating Patient Bills
 
+- As an Accountant, I want to generate itemized patient bills, so that I can record hospital charges.
+  - Accountants search patients by ID, name, or phone.
+  - Bills may contain consultation, diagnostic test, medicine, and Service Charge lines.
+  - A test bill may contain several fixed Placeholder Test entries.
+  - Each bill receives a unique ID and an initial Unpaid status.
+  - Pharmacy Staff may create medicine bills from fixed demo medicine lines.
 
-- User Story: As an Accountant, I want to generate patient bills, so that patients can view their hospital charges and complete their payments.
-  - Accountants must log in using their authorized accounts to access the billing management system.
-  - Accountants can search for patients using their unique patient ID or registered phone number.
-  - The system displays the patient's basic information and relevant hospital service records.
-  - Accountants can generate bills based on services received by patients.
-  - Bills may include consultation fees, diagnostic test charges, medicine costs, admission fees, and other hospital service charges.
-  - Each bill must contain a unique bill ID.
-  - The bill should include the patient's name, patient ID, bill date, service descriptions, individual charges, and total payable amount.
-  - The system automatically calculates the total bill amount based on the entered charges.
-  - Accountants can review the bill before generating it.
-  - After successful generation, the bill is saved in the central database.
-  - The generated bill becomes available in the patient's account.
-  - The initial payment status of a newly generated bill is marked as "Unpaid".
-  - Accountants can view previously generated bills for reference.
+### User Story 2: Editing Unpaid Bills
 
+- As an Accountant, I want to edit Unpaid bills, so that I can correct bill line items before payment.
+  - Unpaid bills are editable.
+  - Paid bills are immutable.
+  - Partial payments are not supported.
 
-### User Story 2: Viewing Unpaid Bills
+### User Story 3: Marking Payments Paid
 
+- As an Accountant, I want to mark a bill Paid after manual or demonstrated payment, so that payment history is current.
+  - Manual counter payments are marked Paid by the Accountant.
+  - Demonstrated online payment may also mark the bill Paid.
+  - No real gateway is integrated.
+  - Receipt download/print is placeholder-only.
 
-- User Story: As an Accountant, I want to view unpaid bills, so that I can identify outstanding payments and monitor the hospital's pending revenue.
-  - Accountants must log in to access the unpaid bills section.
-  - The system displays all patient bills with an "Unpaid" status.
-  - Accountants can search for unpaid bills using the patient ID, patient name, or bill ID.
-  - Each unpaid bill should display the patient's name, bill ID, bill date, total amount, and outstanding amount.
-  - Accountants can filter unpaid bills according to bill date or patient information.
-  - The system should display partially paid bills separately from fully unpaid bills.
-  - Accountants can view the payment history of each bill.
-  - The system automatically removes a bill from the unpaid list when its full payment is completed.
-  - Accountants can identify patients who have outstanding balances.
-  - Accountants can print or download unpaid bill information for record-keeping purposes.
-  - The system should display an appropriate message if there are no unpaid bills.
+### User Story 4: Viewing Bill History
 
+- As an Accountant, I want to view Paid and Unpaid bills, so that I can support account and patient records.
+  - Search is available by patient ID, name, or bill ID.
+  - Paid bills remain in all-bill and patient-bill history.
+  - Paid bills cannot be edited or deleted.
 
 ---
- 2420961(Nawrin) - User stories : Doctor and Pathologist
 
+# 2420961 (Nawrin) - User stories : Doctor and Pathologist
 
-## 1. Common (Both Roles) User Stories
-
+## 1. Common User Stories
 
 ### User Story 1: Secure Login
 
-
-- User Story: As a Doctor or Pathologist, I want to log in with my user ID and password, so that only I can use my account.
-  - Given a valid user ID and password, the role dashboard opens.
-  - Given a wrong password, the message "Invalid user ID or password" appears and no session starts.
-  - No function or patient data is reachable without login.
-
+- As a Doctor or Pathologist, I want to log in with my staff ID and password, so that only I can use my account.
+  - Valid credentials open the role-specific dashboard.
+  - Invalid credentials show a clear error.
+  - No clinical or patient function is reachable without authentication.
 
 ### User Story 2: Role-Based Access
 
-
-- User Story: As a user, I want to see only the functions of my role, so that I cannot reach data I am not allowed to use.
-  - A Doctor's menu shows no Pathologist functions, and a Pathologist's menu shows no Doctor functions.
-  - Opening a Pathologist function's address while logged in as a Doctor returns "Access denied", and the reverse also holds.
-
+- As a clinical user, I want to see only functions authorized for my role.
+  - Ward Doctors cannot open outpatient scheduling or full report creation.
+  - Assistants cannot open another Doctor's schedule.
+  - Ward Nurses cannot open another ward's patients.
+  - Direct URL/API access returns "Access denied".
 
 ### User Story 3: Access Logging
 
-
-- User Story: As the hospital, I want every view or change of patient data recorded, so that misuse can be traced.
-  - After a Doctor opens a patient's history, the access log holds a row with user ID, patient ID, action and date-time.
-
+- As the hospital, I want create/update/delete and security events recorded.
+  - Audit entries are append-only and IT-only.
+  - Ordinary patient-record views are not logged.
+  - Passwords and tokens never appear in audit records.
 
 ## 2. Doctor User Stories
 
+### User Story 1: Viewing an Appointment Schedule
 
-### User Story 1: Viewing Appointment Schedule
+- As an outpatient Doctor, I want to view my appointments for a chosen date.
+  - The list shows only the logged-in Doctor's appointments.
+  - Each row shows patient name/ID, time slot, and status.
+  - Empty dates show "No appointments".
 
+### User Story 2: Cancelling an Appointment
 
-- User Story: As a Doctor, I want to see my appointments for a chosen date, so that I can plan my clinic session.
-  - The list shows only the logged-in Doctor's appointments for that date, each with time, patient name, patient ID and status.
-  - A date with no appointments shows "No appointments".
+- As an outpatient Doctor, I want to cancel a Scheduled appointment at least 24 hours before it.
+  - A reason is optional.
+  - The record keeps Doctor ID, optional reason, and timestamp.
+  - The Doctor receives a reminder popup to call the patient.
+  - Cancellation is blocked if less than 24 hours remains.
 
+### User Story 3: Blocking Invalid Actions
 
-### User Story 2: Canceling Appointment
+- As an outpatient Doctor, I want terminal and late appointments protected.
+  - Cancelled, Completed, or Missed appointments cannot be cancelled again.
+  - Scheduled slots cannot be blocked directly; they must be cancelled first.
 
+### User Story 4: Blocking Schedule Time
 
-- User Story: As a Doctor, I want to cancel an appointment when necessary, so that the patient's slot is not wasted.
-  - For a Scheduled appointment, entering a reason and confirming sets the status to Cancelled and stores reason, Doctor ID and time.
-  - Confirming without a reason is not allowed.
+- As an outpatient Doctor, I want to block a slot, day, or week.
+  - Blocks remain until reopened.
+  - Assistants can manage the assigned Doctor's schedule.
 
+### User Story 5: Searching Patient Records
 
-### User Story 3: Blocking Invalid Cancellation
+- As an outpatient Doctor, I want to search for a patient by ID, name, or phone.
+  - Exact ID, partial/full name, and phone searches are supported.
+  - Unauthorized matches are not returned.
 
+### User Story 6: Creating a Prescription Placeholder
 
-- User Story: As a Doctor, I want the system to stop me cancelling an appointment that is already finished, so that records stay correct.
-  - Cancelling an appointment in Completed, Cancelled or Missed status is rejected and the current status is shown.
+- As an outpatient or Ward Doctor, I want to create a prescription placeholder.
+  - The object is persisted with creator ID and timestamp.
+  - No real medicine fields are required.
+  - It is visible to authorized Patient, Ward Nurse, and Pharmacy views.
+  - PDF/print controls show the near-future message.
 
+### User Story 7: Creating a Medical Report Placeholder
 
-### User Story 4: Searching Patient
+- As an outpatient Doctor, I want to open the medical-report creation placeholder.
+  - Confirmation creates a persisted placeholder object.
+  - Opening it shows read-only near-future information.
+  - It cannot be edited or deleted by a normal clinical user.
 
+### User Story 8: Marking Appointment Outcomes
 
-- User Story: As a Doctor, I want to find a patient by ID or name, so that I open the right record.
-  - Searching by exact patient ID returns that patient only.
-  - Searching by part of a name returns every matching patient the Doctor may access (SEC-06) and no others.
-
-
-### User Story 5: Viewing Medical History
-
-
-- User Story: As a Doctor, I want to see all of a patient's previous medical and test reports, so that I can diagnose using the full history.
-  - The history lists every medical report and every Released test report of the patient, newest first, each with date, type and author.
-  - A patient with no records shows "No previous records".
-
-
-### User Story 6: Viewing Released Test Report
-
-
-- User Story: As a Doctor, I want to open a released test report with its file, so that I can read the exact results.
-  - Opening a Released report shows result values, out-of-range flags, verifying Pathologist, release date and the attached file.
-
-
-### User Story 7: Hiding Unverified Reports
-
-
-- User Story: As a Doctor, I want to see only verified reports, so that I never act on unchecked results.
-  - A report in Draft or Pending Verification status does not appear in the history, and opening it directly shows "Report not yet available".
-
-
-### User Story 8: Adding Medical Report
-
-
-- User Story: As a Doctor, I want to add a medical report with diagnosis, notes and prescription, so that the next Doctor can see what I found.
-  - Saving a report with a diagnosis stores it in the patient's record and it appears at the top of the history.
-  - Saving with an empty diagnosis is rejected; an attached file outside is rejected.
-
-
-### User Story 9: Protecting Saved Reports
-
-
-- User Story: As a Doctor, I want saved medical reports to be unchangeable, so that the record is trustworthy.
-  - A saved report carries the Doctor's ID and date-time and offers no edit or delete option.
-  - A correction is saved as a new report linked to the original, and both remain visible.
-
+- As an outpatient Doctor, I want to mark Scheduled appointments Completed or Missed.
+  - Terminal statuses cannot be cancelled.
 
 ## 3. Pathologist User Stories
 
+### User Story 1: Creating a Pathology Placeholder
 
-### User Story 1: Viewing Test Requests
+- As a Pathologist, I want to search for a patient and create a pathology placeholder.
+  - No test request or sample-collection queue is implemented.
+  - The object contains test name, billing status, Pathologist identity, publish date, and near-future message.
+  - It is visible in the patient portal.
 
+### User Story 2: Viewing Bill Status for a Test
 
-- User Story: As a Pathologist, I want to see all open test requests with urgent ones first, so that I work in the right order.
-  - The list contains every request in Requested, Awaiting Payment, Sample Collected or In Progress status, Urgent first, then oldest first.
-  - Each row shows request ID, patient ID, patient name, test type, priority, requesting Doctor and request date-time.
+- As a Pathologist, I want to see the demonstrated Paid/Unpaid bill status, so that I understand the simplified billing context.
+  - Real paid-before-sample enforcement is not implemented.
+  - The Pathologist directly creates/publishes the placeholder object.
 
+## 4. Ward Doctor User Stories
 
-### User Story 2: Checking Payment Receipt
+### User Story 1: Viewing Ward Patients
 
+- As a Ward Doctor, I want to review patients in my ward context.
+  - Outpatient schedule access is hidden.
+  - Full medical-report creation is hidden.
+  - Prescription placeholders may be created.
 
-- User Story: As a Pathologist, I want to see whether the patient has paid for a test, so that I do not have to send them to billing to ask.
-  - The request shows Paid (with receipt number and date) or Not Paid.
+---
 
+# 2420961 (Nawrin) - Additional Support Staff User Stories
 
-### User Story 3: Recording Sample Collection
+## 1. Ward Nurse User Stories
 
+### User Story 1: Assigning and Transferring Patients
 
-- User Story: As a Pathologist, I want to record that a sample was taken, so that the request moves to testing.
-  - With receipt status Paid, entering sample type and collection time sets the request to Sample Collected.
+- As a Ward Nurse, I want to assign or transfer a patient to a ward/bed.
+  - Ward, bed/room, and admission date are stored.
+  - A patient has only one active ward assignment.
+  - Transfer history is retained.
 
+### User Story 2: Discharging a Patient
 
-### User Story 4: Holding Unpaid Requests
+- As a Ward Nurse, I want to discharge a patient.
+  - Discharge status, date/time, Ward Nurse ID, and optional note are stored.
+  - Active ward/bed assignment is cleared.
+  - Historical discharge information remains.
 
+### User Story 3: Viewing Ward Records
 
-- User Story: As a Pathologist, I want unpaid requests held, so that tests are not processed before payment.
-  - With receipt status Not Paid, the sample is not recorded and the request status becomes Awaiting Payment.
+- As a Ward Nurse, I want to view all report/prescription objects for patients in my ward.
+  - The view is read-only.
+  - Patients in another ward are denied.
 
+## 2. Pharmacy User Stories
 
-### User Story 5: Rejecting Sample
+### User Story 1: Viewing Prescription Placeholders
 
+- As Pharmacy Staff, I want to search patients and open prescription placeholders.
+  - Search supports patient ID, name, and phone.
 
-- User Story: As a Pathologist, I want to reject an unsuitable sample with a reason, so that a new sample is collected.
-  - Rejecting a Sample Collected request with a reason returns it to Requested and stores the reason.
+### User Story 2: Creating a Medicine Bill
 
-
-### User Story 6: Entering Test Results
-
-
-- User Story: As a Pathologist, I want to enter the result of each test parameter, so that results are stored centrally.
-  - Saving valid values creates a Draft Test Report and sets the request to In Progress.
-  - A Draft can be reopened and edited before submission.
-
-
-### User Story 7: Validating Results
-
-
-- User Story: As a Pathologist, I want the system to check my entries, so that typing errors are caught before release.
-  - An empty mandatory field or text in a numeric field blocks the save and highlights the field.
-  - A value outside a defined reference range is saved with a visible flag.
-
-
-### User Story 8: Uploading Test Report
-
-
-- User Story: As a Pathologist, I want to attach the formal report file and submit it, so that it can be verified.
-  - Attaching a valid file and selecting "Submit for verification" sets the report to Pending Verification.
-  - A file of the wrong type or over 10 MB is rejected and the report stays Draft.
-
-
-### User Story 9: Releasing Verified Report
-
-
-- User Story: As a Pathologist, I want to approve a checked report, so that the Doctor can see it.
-  - Approving a Pending Verification report sets it to Released, sets its request to Completed, and the report becomes visible to the requesting Doctor.
-
-
-### User Story 10: Rejecting Report at Verification
-
-
-- User Story: As a Pathologist, I want to send a report back with a reason when I find an error, so that it is corrected before release.
-  - Rejecting with a reason returns the report to Draft; the Doctor still cannot see it.
-
-
-### User Story 11: Locking Released Report
-
-
-- User Story: As the hospital, I want released reports to record who verified them and to be locked, so that results cannot be changed silently.
-  - A Released report shows verifier ID and time, and no user is offered an edit option.
+- As Pharmacy Staff, I want to create an Unpaid medicine bill from fixed demo medicine lines.
+  - Medicine 1 and Medicine 2 lines are available with fixed quantity and demo price choices.
+  - The bill has a demo total.
+  - Pharmacy Staff may edit it until it becomes Paid.
+  - Paid bills are immutable.
