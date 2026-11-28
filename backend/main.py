@@ -10,6 +10,7 @@ from app.activity.models import AuditEvent
 from app.activity.router import router as audit_router
 from app.appointments.router import router as appointments_router
 from app.auth.router import router as auth_router
+from app.auth.models import Account
 from app.config import BACKEND_DIR, settings
 from app.database import DATABASE_URL, engine
 from app.errors import AppError
@@ -23,7 +24,7 @@ from app.billing.router import router as billing_router
 from app.pharmacy.router import router as pharmacy_router
 from app.pathology.router import router as pathology_router
 from sqlalchemy import inspect, text
-from sqlmodel import Session
+from sqlmodel import Session, select
 
 
 logger = logging.getLogger("chms")
@@ -114,6 +115,14 @@ def config_status() -> dict[str, bool | str]:
     except Exception as exc:
         result["database_connection"] = "failed"
         result["database_error_type"] = type(exc).__name__
+    try:
+        with Session(engine) as session:
+            account_count = len(session.exec(select(Account).limit(100)).all())
+        result["account_orm_query"] = "ok"
+        result["account_count"] = str(account_count)
+    except Exception as exc:
+        result["account_orm_query"] = "failed"
+        result["account_orm_error_type"] = type(exc).__name__
     return result
 
 
