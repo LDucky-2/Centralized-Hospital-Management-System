@@ -11,7 +11,7 @@ from app.activity.router import router as audit_router
 from app.appointments.router import router as appointments_router
 from app.auth.router import router as auth_router
 from app.config import BACKEND_DIR, settings
-from app.database import engine
+from app.database import DATABASE_URL, engine
 from app.errors import AppError
 from app.patients.router import router as patients_router
 from app.staff.router import router as staff_router
@@ -91,6 +91,16 @@ async def unhandled_error(request: Request, exc: Exception) -> JSONResponse:
 @app.get("/api/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@app.get("/api/config-status")
+def config_status() -> dict[str, bool | str]:
+    return {
+        "vercel": settings.VERCEL is not None,
+        "database_url_configured": settings.DATABASE_URL is not None,
+        "postgres_url_configured": settings.POSTGRES_URL is not None,
+        "database_type": "postgresql" if DATABASE_URL.startswith(("postgresql", "postgres")) else "sqlite",
+    }
 
 
 FRONTEND_DIR = BACKEND_DIR.parent / "frontend" / "dist"
