@@ -1,5 +1,5 @@
 import { App as AntApp, ConfigProvider, theme } from "antd";
-import { BrowserRouter, Route, Routes } from "react-router";
+import { Route, Routes } from "react-router";
 import { AuthProvider } from "./context/AuthContext";
 import { ITRoute } from "./components/ITRoute";
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -46,11 +46,9 @@ export default function App() {
   return (
     <ConfigProvider theme={{ algorithm: theme.darkAlgorithm, token: { colorPrimary: "#475569", borderRadius: 8 } }}>
       <AntApp>
-        <BrowserRouter>
-          <AuthProvider>
-            <AppRoutes />
-          </AuthProvider>
-        </BrowserRouter>
+        <AuthProvider>
+          <AppRoutes />
+        </AuthProvider>
       </AntApp>
     </ConfigProvider>
   );
